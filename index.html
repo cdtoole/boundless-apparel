@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Boundless Apparel</title>
+  <style>
+    /* (1) Optional custom font */
+    @font-face {
+      font-family: 'Helvetica Neue LT W1G 75 Bold (1)';
+      src: url('fonts/Helvetica Neue LT W1G 75 Bold (1).ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    /* (2) Base setup */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgb(233, 233, 233);
+      font-family: 'Helvetica Neue LT W1G 75 Bold (1)', sans-serif;
+      /* overflow: hidden; */ /* removed for scrolling */
+    }
+
+    /* Hide the scrollbar but keep scrolling functional. */
+    html {
+      scrollbar-width: none; /* For Firefox */
+    }
+    html::-webkit-scrollbar {
+      width: 0;
+      display: none; /* For Chrome, Safari */
+    }
+
+    /* Prevent images from being highlightable/draggable */
+    img {
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Header -> entire page width, no gap on the right */
+    header {
+      margin: 0;
+      background-color: transparent !important;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 0px; 
+      padding: 20px 28px;
+      width: 100%;
+      height: 85px;
+      box-sizing: border-box; 
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+    .header-left {
+      margin-left: -5px; /* Slight nudge left */
+      display: flex;
+      align-items: center;
+    }
+    .hamburger {
+      cursor: pointer;
+      margin-right: 20px;
+    }
+    .hamburger span {
+      display: block;
+      width: 35px;
+      height: 4px;
+      background-color: rgb(255, 255, 255);
+      margin: 6px 0;
+      transition: 0.3s;
+    }
+    .header-left img {
+      width: 200px;
+      height: auto;
+      margin-top: 10px; margin-left: 10px;
+    }
+    .header-icons {
+      display: flex;
+      align-items: center;
+      margin-top: 10px; margin-right: 10px;
+      gap: 20px;
+      flex-shrink: 0; /* Prevent icons from shrinking */
+    }
+    .header-icons a img {
+      width: 40px;
+      height: auto;
+      cursor: pointer;
+    }
+
+    /* Main content */
+    main {
+      padding: 20px;
+    }
+
+    /* Drawer (Hamburger menu) */
+    #drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 1201px; /* 450px + 1px border + 750px */
+      height: 100%;
+      background-color: #fff;
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      display: flex;
+      overflow: hidden; /* remove grey bar */
+      z-index: 1;
+      pointer-events: none;
+    }
+    #drawer.open {
+      transform: translateX(0);
+      z-index: 999;
+      pointer-events: auto;
+    }
+
+    /* Overlay for the drawer only */
+    #overlay {
+      position: fixed;
+      top: 0; 
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      opacity: 0; 
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s;
+      z-index: 998;
+    }
+    #overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Left side (menu) */
+    .drawer-left {
+      flex: 0 0 450px;
+      overflow-y: auto;
+    }
+    .vertical-border {
+      width: 1px;
+      background-color: #ccc;
+      flex: 0 0 1px;
+    }
+
+    /* Right side with the large image */
+    .drawer-right {
+      flex: 0 0 650px;
+      height: 100%;
+      background-color: #ececec;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      pointer-events: none;
+    }
+    #drawer.open .drawer-right {
+      z-index: 999;
+      pointer-events: auto;
+    }
+
+    /* Keep entire model legs in view: no cropping */
+    .large-image {
+      display: block;
+      max-height: 100%;
+      width: auto;
+      object-fit: fill;
+    }
+
+    .new-image {
+      position: absolute; /* Position the new image absolutely */
+      top: 23.5px; /* Adjust as needed */
+      left: 703px; /* Adjust as needed */
+      width: 13px; /* Adjust size as needed */
+      height: auto;
+      z-index: 2; /* Ensure it is on top of the reference image */
+    }
+
+    /* Subheading, headings in left menu */
+    .drawer-content {
+      margin: 0; 
+      padding: 0;
+    }
+    .subheading-image {
+      display: block;
+      pointer-events: none;
+      padding-top: 22px; 
+      padding-bottom: 22px;
+      user-select: none;
+      width: 180px;
+      height: auto;
+      padding-left: 25px;
+    }
+    .subheading-breaker {
+      width: 100%;
+      margin: 0 auto;
+      height: 1px;
+      background-color: #ccc;
+      margin-bottom: 0px;
+    }
+    .heading-group {
+      position: relative;
+      margin: 0; 
+      padding: 0;
+    }
+
+    .heading-row {
+      display: flex; 
+      align-items: center;
+      cursor: pointer; 
+      width: 100%;
+      padding: 5px 15px; /* Same padding as main headers */
+      box-sizing: border-box;
+      transition: background-color 0.3s ease;
+      height: 60px; /* Same height as main headers */
+    }
+
+    .heading-row:hover {
+      background-color: #e0e0e0;
+    }
+
+    .heading-img-1 {
+      width: 180px; 
+      height: auto;
+      padding-left: 10px;
+      margin-right: 20px;
+    }
+
+    .heading-img-2 {
+      width: 180px; 
+      height: auto;
+      padding-left: 10px;
+      margin-right: 20px;
+    }
+
+    .heading-img-3 {
+      width: 180px; 
+      height: auto;
+      padding-left: 10px;
+      margin-right: 20px;
+    }
+
+    .arrow {
+      width: 13px; 
+      height: auto;
+      margin-right: 25px;
+      margin-left: auto;
+      transition: transform 0.5s;
+      transform: rotate(0deg);
+    }
+
+    .arrow.flipped {
+      transform: rotate(-90deg);
+    }
+
+    .sub-items {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease;
+      margin-left: 0px;
+    }
+
+    .sub-items.open {
+      max-height: 300px;
+    }
+
+    .sub-items .sub-heading-row {
+      display: flex; 
+      align-items: center;
+      cursor: pointer; 
+      width: 100%;
+      padding: 5px 15px; /* Same padding as main headers */
+      padding-left: 15px;
+      box-sizing: border-box;
+      transition: background-color 0.3s ease;
+      height: 60px; /* Same height as main headers */
+    }
+
+    .sub-items .sub-heading-row:hover {
+      background-color: #e0e0e0;
+    }
+
+    .sub-items img {
+      display: block;
+      width: 180px; 
+      height: auto;
+      padding-left: 10px;
+      margin-right: 20px;
+    }
+
+    /* ANIMATIONS */
+    @keyframes popIn {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    @keyframes fadeInX {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    /* "Don't Click Me" button => Start hidden offscreen -> slides to final position */
+    #dontClickBtn {
+      position: absolute;
+      top: 0;
+      right: -150px;  /* offscreen start */
+      width: 360px;
+      height: auto;
+      display: none;
+      cursor: pointer;
+      z-index: 9999;
+      transition: right 0.5s ease;
+    }
+    .pop-animation {
+      animation: popIn 0.5s ease forwards;
+    }
+
+    /* X => fade in with 'fadeInX' keyframes */
+    #closeX {
+      position: absolute;
+      top: 19.7px;
+      right: -400px; 
+      width: 50px;
+      height: auto;
+      display: none;
+      cursor: pointer;
+      z-index: 9999;
+      transition: opacity 0.8s ease;
+    }
+    .fade-animation {
+      animation: fadeInX 0.8s forwards; /* slow fade in */
+    }
+
+    /* The 2nd & 3rd buttons => same pop-in but 0.5s delay */
+    #otherBtn1 {
+      position: absolute;
+      width: 360px; 
+      height: auto;
+      display: none;
+      z-index: 9999;
+      animation: popIn 0.5s ease forwards; 
+      top: 1170px;
+      right: 3039.5px;
+    }
+    #otherBtn2 {
+      position: absolute;
+      width: 360px; 
+      height: auto;
+      display: none;
+      z-index: 9999;
+      animation: popIn 0.5s ease forwards; 
+      top: 1170px;
+      right: 3039.5px;
+    }
+
+    /* ================ 
+       NEW POPUP & OVERLAY FOR THE FINAL IMAGE 
+    ================ */
+
+    #imagePopup {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ffffff00;
+      padding: 20px;
+      border: 0px solid #cccccc00;
+      display: none;
+      z-index: 10001; /* above the overlay */
+      text-align: center;
+    }
+    #imagePopup img {
+      max-width: 700px; 
+      height: auto;
+    }
+    #closePopup {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 7px 15px;
+      background: #aaa;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    #closePopupImg {
+      position: absolute;
+      bottom: 440px; /* Change to move vertically */
+      left: 620px;   /* Change to move horizontally */
+      width: 18px;  /* Adjust the size of the image */
+      height: auto; /* Adjust the size of the image */
+      cursor: pointer; /* Make it clickable */
+    }
+
+    #copyButtonImg {
+      position: absolute;
+      top: 396px; /* Adjust to set vertical position */
+      left: 95.5px; /* Adjust to set horizontal position */
+      width: 550px; /* Adjust size of the button */
+      height: auto; /* Maintain aspect ratio */
+     cursor: pointer; /* Make it clickable */
+    }
+
+    /* Fade-in animation for the dimmed background */
+    @keyframes backgroundFadeIn {
+      from {
+       opacity: 0;
+      }
+      to {
+       opacity: 1;
+      }
+    }
+
+    /* Fade-out animation for the dimmed background */
+    @keyframes backgroundFadeOut {
+     from {
+       opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+    #popupOverlay.fade-out {
+      display: block;
+      animation: backgroundFadeOut 0.5s ease forwards;
+    }
+
+    /* Default dimmed background (hidden by default) */
+    #popupOverlay {
+      display: none;
+      opacity: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10000; /* Ensure this is lower than the customImage */
+    }
+
+    /* Show dimmed background with fade-in animation */
+    #popupOverlay.fade-in {
+      display: block;
+      animation: backgroundFadeIn 0.5s ease forwards;
+    }
+
+    /* Popup animation for showing the popup */
+    @keyframes popupIn {
+      from {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Popup animation for hiding the popup */
+    @keyframes popupOut {
+      from {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      to {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+      }
+    }
+
+    #imagePopup.popup-in {
+      display: block;
+      animation: popupIn 0.5s ease forwards;
+    }
+
+    #imagePopup.popup-out {
+      display: block;
+      animation: popupOut 0.5s ease forwards;
+    }
+
+    #otherBtn3 {
+      position: absolute;
+      width: 360px; 
+      height: auto;
+      display: none;
+      z-index: 9999;
+      animation: popIn 0.5s ease forwards; 
+      top: 1170px;
+      right: 3039.5px;
+    }
+
+    #otherBtn4 {
+      position: absolute;
+      width: 360px; 
+      height: auto;
+      display: none;
+      z-index: 9999;
+      animation: popIn 0.5s ease forwards; 
+      top: 1170px;
+      right: 3039.5px;
+    }
+
+    #cart {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 1201px; /* 450px + 1px border + 750px */
+      height: 100%;
+      background-color: #fff;
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      display: flex;
+      overflow: hidden; /* remove grey bar */
+      z-index: 1;
+      pointer-events: none;
+    }
+    #cart.open {
+      transform: translateX(0);
+      z-index: 999;
+      pointer-events: auto;
+    }
+
+    #rightMenu {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 650px;
+      height: 100%;
+      background-color: #fff;
+      transform: translateX(100%);
+      transition: transform 0.4s ease;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+      pointer-events: none;
+    }
+    #rightMenu.open {
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    .rightMenu-header {
+      display: block;
+      pointer-events: none;
+      padding-top: 22px; 
+      padding-bottom: 22px;
+      user-select: none;
+      width: 180px;
+      height: auto;
+      padding-left: 25px;
+    }
+    .rightMenu-breaker {
+      width: 100%;
+      margin: 0 auto;
+      height: 1px;
+      background-color: #ccc;
+      margin-bottom: 0px;
+    }
+    .empty-cart {
+      display: block;
+      padding-left: 20px;
+      width: 500px;
+      height: auto;
+    }
+
+    #searchOverlay {
+      display: none;
+      opacity: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10000;
+      transition: opacity 0.5s ease;
+    }
+    #searchOverlay.open {
+      display: block;
+      opacity: 1;
+    }
+    #searchBar {
+      display: none; /* Ensure it is hidden initially */
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 10001;
+      animation: popupIn 0.5s ease forwards;
+      border: none; /* Remove white border */
+      width: 500px; /* Make it longer */
+      padding-top: 30px; /* Add top padding */
+    }
+    #searchBar.open {
+      display: block;
+    }
+    .close-icon {
+      cursor: pointer;
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    #searchMenu {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 650px;
+      height: 100%;
+      background-color: #fff;
+      transform: translateX(100%);
+      transition: transform 0.4s ease;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+      pointer-events: none;
+    }
+    #searchMenu.open {
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    .searchMenu-header {
+      display: block;
+      pointer-events: none;
+      padding-top: 22px; 
+      padding-bottom: 22px;
+      user-select: none;
+      width: 180px;
+      height: auto;
+      padding-left: 25px;
+    }
+    .searchMenu-breaker {
+      width: 100%;
+      margin: 0 auto;
+      height: 1px;
+      background-color: #ccc;
+      margin-bottom: 0px;
+    }
+    .search-content {
+      display: block;
+      padding-left: 20px;
+      padding-top: 20px; /* Add top padding */
+      width: 500px;
+      height: auto;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #accountMenu {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 650px;
+      height: 100%;
+      background-color: #fff;
+      transform: translateX(100%);
+      transition: transform 0.4s ease;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+      pointer-events: none;
+    }
+    #accountMenu.open {
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    .accountMenu-header {
+      display: block;
+      pointer-events: none;
+      padding-top: 22px; 
+      padding-bottom: 22px;
+      user-select: none;
+      width: 180px;
+      height: auto;
+      padding-left: 25px;
+    }
+    .accountMenu-breaker {
+      width: 100%;
+      margin: 0 auto;
+      height: 1px;
+      background-color: #ccc;
+      margin-bottom: 0px;
+    }
+    .account-content {
+      display: block;
+      padding-left: 20px;
+      padding-top: 20px; /* Add top padding */
+      width: 500px;
+      height: auto;
+    }
+    .account-input {
+      width: 585px; /* Extend to the right */
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding-left: 12px; /* Add left padding */
+    }
+    .account-input.email {
+      margin-bottom: 20px; /* Add padding between boxes */
+      width: 585px; /* Extend to the right */
+    }
+    .account-image, .another-image, .create-account-button {
+      width: 360px;
+      height: auto;
+      padding-bottom: 10px; /* Add bottom padding */
+      margin: 10px; /* Add margin */
+      margin-left: 0px;
+    }
+    .create-account-container {
+      display: flex;
+      height: 50px;
+      align-items: center;
+    }
+    .create-account-button {
+      margin-left: 0px; /* Small gap between images */
+      width: 300px; height: auto;
+      position: relative;
+      left: 0px; /* Adjust this value as needed */
+      transition: filter 0.4s ease;
+    }
+    .create-account-button:hover {
+      filter: brightness(0.8);
+    }
+
+    #loginSuccessOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('images/loginSuccess.png') no-repeat center center;
+      background-size: cover;
+      z-index: 10003;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    #loginSuccessOverlay.show {
+      display: block;
+      opacity: 1;
+    }
+    #loginSuccessOverlay.hide {
+      opacity: 0;
+    }
+
+    #homeVideo {
+      position: static;
+      width: 100vw;
+      height: auto;
+      object-fit: contain;
+      pointer-events: none; /* Disable pointer events for better performance */
+      transform: translateZ(0); /* Enable hardware acceleration */
+      will-change: transform; /* Inform the browser of upcoming changes */
+    }
+
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <a href="index.html"><img src="black text logo white background.PNG" alt="Boundless Logo" style="margin-top: 0px; margin-left: 0px; padding-top: 5px;" /></a>
+    </div>
+    <div class="header-icons">
+      <a href="#"><img src="images/Icon1.gif" alt="Icon1" /></a>
+      <a href="#"><img src="images/icon2.gif" alt="Icon2" /></a>
+      <a href="#" id="icon3"><img src="images/icon3.gif" alt="Icon3" /></a>
+    </div>
+  </header>
+  <video id="homeVideo" autoplay loop muted playsinline style="display:block; width:100%; height:100%; object-fit:cover;">
+    <source src="videos/homeVideo.mp4" type="video/mp4" />
+    <!-- Consider adding a WebM source for better performance -->
+    <!-- <source src="videos/homeVideo.webm" type="video/webm" /> -->
+  </video>
+
+  <div id="cart"></div>
+
+  <!-- DRAWER -->
+  <div id="drawer">
+    <div class="drawer-left">
+      <div class="drawer-content">
+        <img src="images/newSubheading.png" alt="New Subheading" class="subheading-image" />
+        <div class="subheading-breaker"></div>
+
+        <div class="subheading-breaker"></div>
+
+        <!-- Heading #1 -->
+        <div class="heading-group" data-index="1">
+          <div class="heading-row">
+            <img src="images/Collectionsblacknew.png" alt="Heading 1" class="heading-img-1" style="padding-bottom: 30px; padding-top: 30px;"/>
+            <img src="images/arrow-left.png" alt="Arrow" class="arrow"/>
+          </div>
+          <div class="sub-items" data-for="1">
+            <div class="sub-heading-row">
+              <img src="images/subheading1a.png" alt="Sub Heading 1A">
+            </div>
+            <div class="sub-heading-row">
+              <img src="images/subheading1b.png" alt="Sub Heading 1B">
+            </div>
+          </div>
+        </div>
+
+        <!-- Heading #2 -->
+        <div class="heading-group" data-index="2">
+          <div class="heading-row">
+            <img src="images/newarrivalsblacknew.png" alt="Heading 2" class="heading-img-2" style="padding-bottom: 30px; padding-top: 30px;"/>
+            <img src="images/arrow-left.png" alt="Arrow" class="arrow"/>
+          </div>
+          <div class="sub-items" data-for="2">
+            <div class="sub-heading-row">
+              <img src="images/subheading2a.png" alt="Sub Heading 2A">
+            </div>
+            <div class="sub-heading-row">
+              <img src="images/subheading2b.png" alt="Sub Heading 2B">
+            </div>
+          </div>
+        </div>
+
+        <!-- Heading #3 -->
+        <div class="heading-group" data-index="3">
+          <div class="heading-row">
+            <img src="images/Apparelblacknew.png" alt="Heading 3" class="heading-img-3" style="padding-bottom: 30px; padding-top: 30px;"/>
+            <img src="images/arrow-left.png" alt="Arrow" class="arrow"/>
+          </div>
+          <div class="sub-items" data-for="3">
+            <div class="sub-heading-row">
+              <img src="images/subheading3a.png" alt="Sub Heading 3A">
+            </div>
+            <div class="sub-heading-row">
+              <img src="images/subheading3b.png" alt="Sub Heading 3B">
+            </div>
+            <div class="sub-heading-row">
+              <img src="images/subheading3c.png" alt="Sub Heading 3C">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vertical-border"></div>
+    <!-- Right side: 650px, with reference image -->
+    <div class="drawer-right">
+      <img src="images/largeReferenceImage.png" alt="Large Reference" class="large-image"/>
+      <img src="images/newImage.png" alt="New Image" class="new-image" onclick="closeHamburgerMenu()"/> <!-- New Image Button -->
+    </div>
+  </div>
+
+  <!-- Buttons OUTSIDE the .drawer-right so not inside reference image container -->
+  <img id="dontClickBtn" src="images/dontClick.png" alt="Don't Click Me"/>
+  <!-- 2nd & 3rd buttons -->
+  <img id="otherBtn1"   src="images/otherBtn1.png" alt="Other Button 1"/>
+  <img id="otherBtn2"   src="images/otherBtn2.png" alt="Other Button 2"/>
+  <img id="otherBtn3" src="images/otherBtn3.png" alt="Other Button 3"/>
+  <img id="otherBtn4" src="images/otherBtn4.png" alt="Other Button 4"/>
+
+  <!-- OVERLAY -->
+  <div id="overlay"></div>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <h1>Welcome to My Website</h1>
+    <p>Your content goes here...</p>
+    <div id="feedback" style="color: red; margin-top: 10px;"></div>
+    <section id="products">
+      <h2>Products</h2>
+      <!-- Add product listings or fetch them dynamically from /api/products -->
+    </section>
+  </main>
+
+  <!-- =========== NEW POPUP OVERLAY + BOX =========== -->
+  <div id="popupOverlay"></div>
+  <div id="imagePopup">
+    <img src="images/finalImage.png" alt="Final Popup Image"/>
+    <img id="closePopupImg" src="images/closeButtonImage.png" alt="Close Popup" />
+    <img id="copyButtonImg" src="images/copyButtonImage.png" alt="Copy Discount Code" />
+  </div>
+
+  <div id="rightMenu">
+    <img src="images/cartHeader.png" alt="Cart Header" class="rightMenu-header" />
+    <div class="rightMenu-breaker"></div>
+    <img src="images/emptyCart.png" alt="Empty Cart" class="empty-cart" />
+  </div>
+
+  <div id="searchOverlay"></div>
+  <div id="searchBar">
+    <input type="text" placeholder="..." style="width: 100%; padding: 10px; font-size: 16px;" />
+    <img src="images/close-icon.png" alt="Close" class="close-icon" onclick="closeSearchBar()" />
+  </div>
+
+  <div id="searchMenu">
+    <img src="images/searchHeader.png" alt="Search Header" class="searchMenu-header" />
+    <div class="searchMenu-breaker"></div>
+    <div class="search-content">
+      <input type="text" placeholder="..." style="width: 100%; padding: 10px; font-size: 16px;" />
+    </div>
+  </div>
+
+  <div id="accountMenu">
+    <img src="images/accountHeader.png" alt="Account Header" class="accountMenu-header" />
+    <div class="accountMenu-breaker"></div>
+    <div class="account-content">
+      <img src="images/accountImage.png" alt="Account Image" class="account-image" />
+      <form class="login-form">
+        <input type="text" placeholder="Email Address" class="account-input email" />
+        <input type="password" placeholder="Password" class="account-input"/>
+        <img src="images/loginButton.png" alt="Login" class="create-account-button" style="width: 610px; height: auto; margin-top: 20px; padding: 0px; margin-left: 0px; border: 0px; cursor: pointer;" onclick="document.querySelector('.login-form').submit();" />
+      </form>
+      <button class="logout-button" style="display: none; width: 300px; height: auto; margin-top: 10px;">Logout</button>
+      <div class="create-account-container">
+        <img src="images/anotherImage.png" alt="Another Image" class="another-image" style="padding-left: 7px;" />
+        <a href="create-account.html" style="
+            /* height: 0px; */
+            /* width: 0px; */
+            width: 0px;
+            height: 0px;
+          ">
+          <img src="images/createAccountButton.png" alt="Create Account" class="create-account-button" style="left: -134px; top: -25px; width: 41px; padding-left: 3px ;" />
+      </div>
+      <div id="loginFeedback" style="color: red; margin-top: 10px;"></div> <!-- Feedback message -->
+    </div>
+  </div>
+
+  <div id="loginSuccessOverlay"></div>
+  <div id="loginStatus" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 10px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); z-index: 10004; display: none;">
+    Logged in
+  </div>
+  <div id="loginError" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ffdddd; padding: 10px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); z-index: 10004; display: none;">
+    Invalid email or password
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const hamburger   = document.getElementById('hamburger');
+    const drawer      = document.getElementById('drawer');
+    const overlay     = document.getElementById('overlay');
+    const icon3       = document.getElementById('icon3');
+    const rightMenu   = document.getElementById('rightMenu');
+    const icon1       = document.querySelector('.header-icons a img[alt="Icon1"]');
+    const icon2       = document.querySelector('.header-icons a img[alt="Icon2"]');
+    const searchOverlay = document.getElementById('searchOverlay');
+    const searchBar   = document.getElementById('searchBar');
+    const searchMenu  = document.getElementById('searchMenu');
+    const accountMenu = document.getElementById('accountMenu');
+    let discountShown = false; // Once discount is shown, never show any buttons again
+
+    hamburger.addEventListener('click', () => {
+      if (drawer.classList.contains('open')) {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+        hideButtons(); // Hide buttons when closing the menu
+      } else {
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+
+        if (!discountShown) {
+          // After 2s, show the "Don't Click Me" button
+          setTimeout(() => {
+            if (drawer.classList.contains('open')) {
+              showDontClickButton();
+            }
+          }, 2000);
+        }
+      }
+    });
+
+    icon3.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (rightMenu.classList.contains('open')) {
+        rightMenu.classList.remove('open');
+        overlay.classList.remove('open');
+      } else {
+        rightMenu.classList.add('open');
+        overlay.classList.add('open');
+      }
+    });
+
+    overlay.addEventListener('click', () => {
+      if (rightMenu.classList.contains('open')) {
+        rightMenu.classList.remove('open');
+        overlay.classList.remove('open');
+      }
+    });
+
+    icon1.addEventListener('click', (e) => {
+      e.preventDefault();
+      searchMenu.classList.add('open');
+      overlay.classList.add('open');
+    });
+
+    icon2.addEventListener('click', (e) => {
+      e.preventDefault();
+      accountMenu.classList.add('open');
+      overlay.classList.add('open');
+    });
+
+    overlay.addEventListener('click', () => {
+      if (searchMenu.classList.contains('open')) {
+        searchMenu.classList.remove('open');
+        overlay.classList.remove('open');
+      }
+      if (accountMenu.classList.contains('open')) {
+        accountMenu.classList.remove('open');
+        overlay.classList.remove('open');
+      }
+    });
+
+    searchOverlay.addEventListener('click', () => {
+      closeSearchBar();
+    });
+
+    function closeSearchBar() {
+      searchOverlay.classList.remove('open');
+      searchBar.classList.remove('open');
+      searchBar.style.animation = 'popupOut 0.5s ease forwards';
+      setTimeout(() => {
+        searchBar.style.display = 'none';
+        searchBar.style.animation = ''; // Reset animation
+      }, 500);
+    }
+
+    const headingGroups = document.querySelectorAll('.heading-group');
+    headingGroups.forEach(group => {
+      const headingRow = group.querySelector('.heading-row');
+      const arrow      = group.querySelector('.arrow');
+      const subItems   = group.querySelector('.sub-items');
+      headingRow.addEventListener('click', () => {
+        arrow.classList.toggle('flipped');
+        subItems.classList.toggle('open');
+      });
+    });
+
+    const dontClickBtn = document.getElementById("dontClickBtn");
+    const otherBtn1    = document.getElementById("otherBtn1");
+    const otherBtn2    = document.getElementById("otherBtn2");
+    const otherBtn3    = document.getElementById("otherBtn3");
+    const otherBtn4    = document.getElementById("otherBtn4");
+
+    // The new final popup elements
+    const popupOverlay  = document.getElementById("popupOverlay");
+    const imagePopup    = document.getElementById("imagePopup");
+    const closePopupImg = document.getElementById("closePopupImg");
+    const copyButtonImg = document.getElementById("copyButtonImg");
+
+    copyButtonImg.addEventListener("click", () => {
+      navigator.clipboard.writeText("WELL_DONE").then(() => {
+        copyButtonImg.src = "images/copiedImage.png";
+        // Disable further clicks on the button
+        copyButtonImg.style.pointerEvents = "none";
+        fireConfetti();
+      });
+    });
+
+    function fireConfetti() {
+      const canvas = document.getElementById("confettiCanvas");
+      const confetti = window.confetti.create(canvas, {
+        resize: true, // Automatically resize to the full screen
+        useWorker: true, // Use a web worker for better performance
+      });
+      // Launch multiple confetti bursts
+      confetti({
+        ticks: 600, // Particles stay longer
+        particleCount: 250, // Number of particles
+        spread: 100,         // Spread angle
+        origin: { y: 0.6 }, // Start slightly lower
+     });
+    }
+
+    closePopupImg.addEventListener("click", () => {
+      // Hide the popup when the image is clicked
+      popupOverlay.style.display = "none";
+      imagePopup.style.display = "none";
+    });
+
+    closePopupImg.addEventListener("click", closeFinalPopup);
+
+    // Start all hidden
+    dontClickBtn.style.display = "none";
+    otherBtn1.style.display    = "none";
+    otherBtn2.style.display    = "none";
+    popupOverlay.style.display = "none";
+    imagePopup.style.display   = "none";
+
+    function showDontClickButton() {
+      if (discountShown) return;
+      dontClickBtn.classList.add('pop-animation');
+      dontClickBtn.style.display = 'block';
+      dontClickBtn.style.right   = '3039.5px'; // or adjust as you see fit
+      dontClickBtn.style.top     = '1170px'; // or adjust as you see fit
+
+      closeX.style.right = '1820px'; 
+      setTimeout(() => {
+        if (drawer.classList.contains('open')) {
+          closeX.style.display = 'block';
+          closeX.classList.add('fade-animation');
+        }
+      }, 500);
+    }
+
+    function hideButtons() {
+      dontClickBtn.classList.remove('pop-animation');
+      dontClickBtn.style.display = 'none';
+      dontClickBtn.style.right   = '-150px';
+
+      otherBtn1.style.display = 'none';
+      otherBtn2.style.display = 'none';
+      otherBtn3.style.display = 'none';
+      otherBtn4.style.display = 'none';
+    }
+
+    // 2) Pressing 2nd button => show the 3rd button in a different spot
+    otherBtn1.addEventListener('click', () => {
+      // hide the second button on click
+      otherBtn1.style.display = 'none';
+
+      // same pop animation with a short delay
+      setTimeout(() => {
+        if (!discountShown) { 
+          otherBtn2.style.display = 'block';
+          otherBtn2.classList.add('pop-animation');
+        }
+      }, 85);
+    });
+
+    // 3) Pressing 3rd button => show the 4th button in the same spot
+      otherBtn2.addEventListener('click', () => {
+        // hide the third button on click
+        otherBtn2.style.display = 'none';
+        // same pop animation with a short delay
+        setTimeout(() => {
+          if (!discountShown) { 
+            otherBtn3.style.display = 'block';
+            otherBtn3.classList.add('pop-animation');
+          }
+        }, 85);
+      });
+
+      // 3) Pressing 3rd button => show the 4th button in the same spot
+      otherBtn3.addEventListener('click', () => {
+        // hide the third button on click
+        otherBtn3.style.display = 'none';
+        // same pop animation with a short delay
+        setTimeout(() => {
+          if (!discountShown) { 
+            otherBtn4.style.display = 'block';
+            otherBtn4.classList.add('pop-animation');
+          }
+        }, 85);
+      });
+
+    // 5) Fifth button => show final popup => never show any buttons again
+      otherBtn4.addEventListener('click', () => {
+        discountShown = true;
+        hideButtons(); 
+        // Instead of alert, show the final popup
+        showFinalPopup();
+      });
+
+    // If user clicks the "Don't Click Me" => show 2nd button
+    dontClickBtn.addEventListener("click", () => {
+      hideButtons();
+      if (!discountShown) {
+        otherBtn1.style.display = 'block';
+        setTimeout(() => {
+          otherBtn1.classList.add('pop-animation');
+        }, 500);
+      }
+    });
+
+    function closeHamburgerMenu() {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+      hideButtons(); // Hide buttons when closing the menu
+    }
+
+    /* =========== NEW: Final Popup Logic =========== */
+    function showFinalPopup() {
+      // Add fade-in effect for the dimmed background
+      popupOverlay.classList.remove("fade-out");
+      popupOverlay.classList.add("fade-in");
+      
+      // Dim the background with #popupOverlay
+      popupOverlay.style.display = "block";
+
+      // Show the centered image box
+      imagePopup.classList.remove("popup-out");
+      imagePopup.classList.add("popup-in");
+      imagePopup.style.display   = "block";
+     }
+
+    closePopupBtn.addEventListener("click", () => {
+      // Hide the final popup
+      popupOverlay.style.display = "none";
+      imagePopup.style.display   = "none";
+    });
+
+    function closeFinalPopup() {
+      console.log("Starting fade-out animation...");
+
+      // Ensure the overlay is visible before starting the fade-out animation
+      popupOverlay.style.display = "block";
+  
+      // Add fade-out class
+      popupOverlay.classList.remove("fade-in");
+     popupOverlay.classList.add("fade-out");
+
+     // Add popup-out animation
+     imagePopup.classList.remove("popup-in");
+     imagePopup.classList.add("popup-out");
+      // Wait for animation to finish
+      setTimeout(() => {
+       popupOverlay.style.display = "none"; // Hide overlay
+        popupOverlay.classList.remove("fade-out"); // Reset class
+        imagePopup.style.display = "none"; // Hide popup
+        imagePopup.classList.remove("popup-out"); // Reset class
+        console.log("Fade-out animation complete.");
+      }, 500); // Ensure this matches the animation duration
+    }
+  </script>
+  <canvas id="confettiCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10002;"></canvas>
+</body>
+</html>
